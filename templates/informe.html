@@ -1,0 +1,117 @@
+{% extends "base.html" %} {% block titulo %}Informe de incidencias{% endblock %}
+{% block contenido %}
+
+<h2>Filtros</h2>
+<div class="filtros">
+  <form method="get" action="/informe">
+    <label>
+      Categoría:
+      <select name="categoria">
+        <option value="" {% if not categoria %}selected{% endif %}>(Todas)</option>
+        <option value="red" {% if categoria == "red" %}selected{% endif %}>Red</option>
+        <option value="hardware" {% if categoria == "hardware" %}selected{% endif %}>Hardware</option>
+        <option value="software" {% if categoria == "software" %}selected{% endif %}>Software</option>
+      </select>
+    </label>
+
+    <label>
+      Gravedad mínima:
+      <input type="number" name="min_gravedad" min="1" max="5" value="{{ min_gravedad }}" />
+    </label>
+    <button type="submit">Aplicar filtros</button>
+  </form>
+</div>
+
+<h2>Resumen</h2>
+<ul>
+  <li>Total de incidencias: {{ resumen.total }}</li>
+  <li>Incidencias resueltas: {{ resumen.resueltas }}</li>
+  <li>Porcentaje resueltas: {{ resumen.porcentaje_resueltas }} %</li>
+</ul>
+
+<h2>Detalle de incidencias</h2>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Título</th>
+      <th>Categoría</th>
+      <th>Gravedaad</th>
+      <th>Resuelta</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for incidencia in incidencias %}
+    <tr>
+      <td>{{ incidencia.id if incidencia.id is defined else incidencia["id"] }}</td>
+      <td>{{ incidencia.titulo if incidencia.titulo is defined else incidencia["titulo"] }}</td>
+      <td>
+        {{ incidencia.categoria if incidencia.categoria is defined else incidencia["categoria"] }}
+      </td>
+      <td>
+        {{ incidencia.gravedad if incidencia.gravedad is defined else incidencia["gravedad"] }}
+      </td>
+      <td>
+        {% set r = (incidencia.resuelta if incidencia.resuelta is defined else
+        incidencia["resuelta"]) %} {% if r %} Sí {% else %} No {% endif %}
+      </td>
+    </tr>
+    {% endfor %} {% if incidencias|length == 0 %}
+    <tr>
+      <td colspan="5">No hay incidencias que cumplan los filtros.</td>
+    </tr>
+    {% endif %}
+  </tbody>
+</table>
+
+<h2>Gráfico: incidencias por categoría</h2>
+<canvas id="graficoCategoria" width="800" height="300"></canvas>
+
+<h2>Gráfico: incidencias por gravedad</h2>
+<canvas id="graficoGravedad" width="800" height="300"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labelsCat = {{ labels | tojson }};
+  const valuesCat = {{ values | tojson }};
+
+  const ctxCat = document.getElementById("graficoCategoria").getContext("2d");
+  new Chart(ctxCat, {
+    type: "bar",
+    data: {
+      labels: labelsCat,
+      datasets: [
+        {
+          label: "Número de incidencias",
+          data: valuesCat,
+        },
+      ],
+    },
+  });
+
+  const labelsG = {{ labels_gravedad | tojson }};
+  const valuesG = {{ values_gravedad | tojson }};
+
+  const ctxG = document.getElementById("graficoGravedad").getContext("2d");
+  new Chart(ctxG, {
+    type: "bar",
+    data: {
+      labels: labelsG,
+      datasets: [
+        {
+          label: "Número de incidencias",
+          data: valuesG,
+        },
+      ],
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+
+{% endblock %}
