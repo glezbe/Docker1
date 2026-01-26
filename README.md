@@ -21,6 +21,7 @@ Con Docker y Docker Compose instalados:
 
 ```bash
 docker-compose up --build
+```
 
 # Ejemplo
 <img width="1913" height="667" alt="image" src="https://github.com/user-attachments/assets/44cd7d0f-e3df-4db2-9f7c-1be18287fd83" />
